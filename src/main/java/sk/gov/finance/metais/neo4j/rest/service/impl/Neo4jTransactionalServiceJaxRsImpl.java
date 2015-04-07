@@ -47,7 +47,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
 
     }
 
-    public CypherResponse runQuery(Transaction transaction, String cypherQuery) throws JsonProcessingException {
+    public CypherResponse runQuery(Transaction transaction, String cypherQuery){
         CypherRequest request = new CypherRequest();
 
         request.getStatements().add(new CypherStatement(cypherQuery));
@@ -55,8 +55,12 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         WebTarget resourceTarget = client.target(transaction.getLocationUri());
 
         if (log.isDebugEnabled()) {
-            log.debug("Request to neo4j from runQuery - transactionUrl:" + transaction.getLocationUri() + " :\n"
-                    + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            try {
+                log.debug("Request to neo4j from runQuery - transactionUrl:" + transaction.getLocationUri() + " :\n"
+                        + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
                 .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
@@ -69,14 +73,18 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         response.close();
 
         if (log.isDebugEnabled()) {
-            log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            try {
+                log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
         checkResponse(body);
 
         return body;
     }
 
-    public CypherResponse runQuery(Transaction transaction, List<String> cypherQueries) throws JsonProcessingException {
+    public CypherResponse runQuery(Transaction transaction, List<String> cypherQueries) {
         CypherRequest request = new CypherRequest();
         for (String cypherQuery : cypherQueries) {
             request.getStatements().add(new CypherStatement(cypherQuery));
@@ -85,8 +93,12 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         WebTarget resourceTarget = client.target(transaction.getLocationUri());
 
         if (log.isDebugEnabled()) {
-            log.debug("Request to neo4j from runQuery - transactionUrl:" + transaction.getLocationUri() + " :\n"
-                    + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            try {
+                log.debug("Request to neo4j from runQuery - transactionUrl:" + transaction.getLocationUri() + " :\n"
+                        + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
                 .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
@@ -99,14 +111,18 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         response.close();
 
         if (log.isDebugEnabled()) {
-            log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            try {
+                log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
         checkResponse(body);
 
         return body;
     }
 
-    public Transaction startTransaction() throws JsonProcessingException {
+    public Transaction startTransaction(){
         CypherRequest request = new CypherRequest();
 
         WebTarget resourceTarget = client.target(dbTransactionUrl);
@@ -125,21 +141,29 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         response.close();
 
         if (log.isDebugEnabled()) {
-            log.debug("Response from neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body)
-                    + " location:" + locationUri);
+            try {
+                log.debug("Response from neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body)
+                        + " location:" + locationUri);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return new Transaction(URI.create(locationUri), body.getCommit());
 
     }
 
-    public void commitTransaction(Transaction transaction) throws JsonProcessingException {
+    public void commitTransaction(Transaction transaction){
         CypherRequest request = new CypherRequest();
 
         WebTarget resourceTarget = client.target(transaction.getCommitUrl());
         if (log.isDebugEnabled()) {
-            log.debug("Request to neo4j from commitTransaction - transactionUrl: " + dbTransactionUrl + ":\n"
-                    + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            try {
+                log.debug("Request to neo4j from commitTransaction - transactionUrl: " + dbTransactionUrl + ":\n"
+                        + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
@@ -150,7 +174,11 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         response.close();
 
         if (log.isDebugEnabled()) {
-            log.debug("Response to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            try {
+                log.debug("Response to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         checkResponse(body);
