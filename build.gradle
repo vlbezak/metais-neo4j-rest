@@ -1,0 +1,50 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+group 'sk.gov.finance.metais'
+version = '1.0'
+
+sourceCompatibility = 1.7
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'metais-neo4j-rest',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+	mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    compile 'org.springframework:spring-webmvc:4.0.2.RELEASE'
+    //compile 'com.fasterxml.jackson.core:jackson-databind:2.4.4'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.5.1'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.slf4j:slf4j-simple:1.7.12'
+    compile 'commons-codec:commons-codec:1.10'
+    
+    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    testCompile 'org.glassfish.jersey.core:jersey-client:2.9.1'
+    
+    testCompile 'junit:junit:4.+'
+    testCompile 'org.springframework:spring-test:4.1.6.RELEASE'
+}
+
+test {
+    systemProperties 'property': 'value'
+    systemProperties 'org.slf4j.simpleLogger.defaultLogLevel' : 'debug'
+}
+
+
+logging.captureStandardOutput LogLevel.INFO
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
