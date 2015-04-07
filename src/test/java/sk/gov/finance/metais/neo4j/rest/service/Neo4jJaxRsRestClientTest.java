@@ -31,6 +31,8 @@ import sk.gov.finance.metais.neo4j.rest.bo.CypherResult;
 import sk.gov.finance.metais.neo4j.rest.bo.Transaction;
 import sk.gov.finance.metais.neo4j.rest.service.Neo4jTransactionalService;
 import sk.gov.finance.metais.neo4j.rest.service.impl.Neo4jTransactionalServiceJaxRsImpl;
+import sk.gov.finance.metais.neo4j.rest.service.impl.Neo4jTransactionalServiceRestTemplateImpl;
+import sk.gov.finance.metais.neo4j.rest.service.impl.Neo4jTransactionalServiceWinkImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = Neo4jRestTestConfig.class)
@@ -38,9 +40,9 @@ public class Neo4jJaxRsRestClientTest {
 
     private static final Logger log = LoggerFactory.getLogger(Neo4jJaxRsRestClientTest.class);
 
-    @Qualifier("jaxRsTestService")
+    @Qualifier("winkTestService")
     @Autowired
-    Neo4jTransactionalService service;
+    private Neo4jTransactionalService service;
 
     @PostConstruct
     public void setupTests() throws Exception {
@@ -263,6 +265,16 @@ class Neo4jRestTestConfig {
     @Bean(name = "jaxRsTestService")
     Neo4jTransactionalService neo4jRestService() {
         return new Neo4jTransactionalServiceJaxRsImpl(neo4jUrl, neo4jUsername, neo4jPassword);
+    }
+    
+    @Bean(name = "winkTestService")
+    Neo4jTransactionalService neo4jWinkService() {
+        return new Neo4jTransactionalServiceWinkImpl(neo4jUrl, neo4jUsername, neo4jPassword);
+    }
+    
+    @Bean(name = "restTemplateTestService")
+    Neo4jTransactionalService neo4jRestTemplateService() {
+        return new Neo4jTransactionalServiceRestTemplateImpl(neo4jUrl, neo4jUsername, neo4jPassword);
     }
 
     @Bean
