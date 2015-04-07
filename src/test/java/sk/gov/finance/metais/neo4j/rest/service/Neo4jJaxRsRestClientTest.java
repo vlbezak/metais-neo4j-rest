@@ -184,7 +184,7 @@ public class Neo4jJaxRsRestClientTest {
     }
 
 
-    @Test
+    //@Test
     public void testTransactionCommitMultipleThreads() throws Exception {
 
         Transaction trans;
@@ -306,7 +306,7 @@ public class Neo4jJaxRsRestClientTest {
             //So create application context manualy
             ApplicationContext context = new AnnotationConfigApplicationContext(Neo4jRestTestConfig.class);
 
-            serviceInThread = context.getBean(Neo4jTransactionalService.class);
+            serviceInThread = (Neo4jTransactionalService)context.getBean("winkTestService");
         }
 
         QueryThreadData data;
