@@ -1,16 +1,18 @@
 package sk.gov.finance.metais.neo4j.rest.service.impl;
 
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.wink.client.ClientConfig;
+import org.apache.wink.client.ClientResponse;
+import org.apache.wink.client.Resource;
+import org.apache.wink.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -23,28 +25,38 @@ import sk.gov.finance.metais.neo4j.rest.exceptions.Neo4jErrorException;
 import sk.gov.finance.metais.neo4j.rest.service.Neo4jTransactionalService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+//import org.codehaus.jackson.map.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 @Component
-public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalService {
+public class Neo4jTransactionalServiceWinkImpl implements Neo4jTransactionalService {
 
     private static final Logger log = LoggerFactory.getLogger(Neo4jTransactionalServiceJaxRsImpl.class);
 
-    private Client client;
+    private RestClient client;
     private String dbUrl;
     private String dbTransactionUrl;
     private String userPasswordEncoded;
 
-    public Neo4jTransactionalServiceJaxRsImpl(String dbUrl, String username, String password) {
+    public Neo4jTransactionalServiceWinkImpl(String dbUrl, String username, String password) {
 
-        client = ClientBuilder.newClient();
-        client.register(JacksonJsonProvider.class);
-
-        this.dbUrl = dbUrl;
+       this.dbUrl = dbUrl;
         this.dbTransactionUrl = dbUrl + "/transaction";
         this.userPasswordEncoded = new String(Base64.encodeBase64((username + ":" + password).getBytes()));
+        
+        ClientConfig clientConfig = new ClientConfig();
+        
+        Application app = new Application() {
+            public Set<Class<?>> getClasses() {
+                Set<Class<?>> classes = new HashSet<Class<?>>();
+                classes.add(JacksonJsonProvider.class);
+                return classes;
+            }
+        };
+        clientConfig.applications(app);
 
+        client = new RestClient(clientConfig);
     }
 
     public CypherResponse runQuery(Transaction transaction, String cypherQuery){
@@ -52,7 +64,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
 
         request.getStatements().add(new CypherStatement(cypherQuery));
 
-        WebTarget resourceTarget = client.target(transaction.getLocationUri());
+        Resource resourceTarget = client.resource(transaction.getLocationUri());
 
         if (log.isDebugEnabled()) {
             try {
@@ -62,15 +74,15 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
                 throw new RuntimeException(e);
             }
         }
-        Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
+        ClientResponse response = resourceTarget.accept(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
+                .header("Content-Type", MediaType.APPLICATION_JSON).post(request);
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
         }
 
-        CypherResponse body = response.readEntity(CypherResponse.class);
-        response.close();
+        CypherResponse body = response.getEntity(CypherResponse.class);
+       
 
         if (log.isDebugEnabled()) {
             try {
@@ -90,7 +102,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
             request.getStatements().add(new CypherStatement(cypherQuery));
         }
 
-        WebTarget resourceTarget = client.target(transaction.getLocationUri());
+        Resource resourceTarget = client.resource(transaction.getLocationUri());
 
         if (log.isDebugEnabled()) {
             try {
@@ -100,15 +112,14 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
                 throw new RuntimeException(e);
             }
         }
-        Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
+        ClientResponse response = resourceTarget.accept(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
+                .header("Content-Type", MediaType.APPLICATION_JSON).post(request);
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
         }
 
-        CypherResponse body = response.readEntity(CypherResponse.class);
-        response.close();
+        CypherResponse body = response.getEntity(CypherResponse.class);
 
         if (log.isDebugEnabled()) {
             try {
@@ -125,20 +136,27 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
     public Transaction startTransaction(){
         CypherRequest request = new CypherRequest();
 
-        WebTarget resourceTarget = client.target(dbTransactionUrl);
+        Resource resourceTarget = client.resource(dbTransactionUrl);
+        
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from startTransaction - transactionUrl:" + dbTransactionUrl + " :\n"
+                        + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-        Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
+        ClientResponse response = resourceTarget.accept(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
+                .header("Content-Type", MediaType.APPLICATION_JSON).post(request);
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
         }
 
-        CypherResponse body = response.readEntity(CypherResponse.class);
+        CypherResponse body = response.getEntity(CypherResponse.class);
 
         String locationUri = (String) response.getHeaders().getFirst("Location");
-
-        response.close();
 
         if (log.isDebugEnabled()) {
             try {
@@ -156,7 +174,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
     public void commitTransaction(Transaction transaction){
         CypherRequest request = new CypherRequest();
 
-        WebTarget resourceTarget = client.target(transaction.getCommitUrl());
+        Resource resourceTarget = client.resource(transaction.getCommitUrl());
         if (log.isDebugEnabled()) {
             try {
                 log.debug("Request to neo4j from commitTransaction - transactionUrl: " + dbTransactionUrl + ":\n"
@@ -166,12 +184,10 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
             }
         }
 
-        Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
+        ClientResponse response = resourceTarget.accept(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
+                .header("Content-Type", MediaType.APPLICATION_JSON).post(request);
 
-        CypherResponse body = response.readEntity(CypherResponse.class);
-
-        response.close();
+        CypherResponse body = response.getEntity(CypherResponse.class);
 
         if (log.isDebugEnabled()) {
             try {
@@ -186,15 +202,14 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
     }
 
     public void rollbackTransaction(Transaction transaction) {
-        WebTarget resourceTarget = client.target(transaction.getLocationUri());
+        Resource resourceTarget = client.resource(transaction.getLocationUri());
 
-        Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", MediaType.APPLICATION_JSON).buildDelete().invoke();
+        ClientResponse response = resourceTarget.accept(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
+                .header("Content-Type", MediaType.APPLICATION_JSON).post("");
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
         }
-        response.close();
 
     }
 

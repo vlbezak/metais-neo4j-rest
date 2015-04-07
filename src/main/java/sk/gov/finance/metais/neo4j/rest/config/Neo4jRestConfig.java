@@ -14,25 +14,5 @@ import sk.gov.finance.metais.neo4j.rest.interceptors.HeaderRequestInterceptor;
 
 @Configuration
 public class Neo4jRestConfig {
-    @Bean(name="neo4jRestTemplate")
-    RestTemplate neo4jRestTemplate() {
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(
-                            new MappingJackson2HttpMessageConverter());
-            restTemplate.getMessageConverters().add(
-                            new StringHttpMessageConverter());
-            
-            List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-            
-            if(interceptors == null)
-            {
-                    interceptors = new ArrayList<ClientHttpRequestInterceptor>();
-            }
-            
-            interceptors.add(new HeaderRequestInterceptor("Authorization", "Basic bmVvNGo6emFxMTIz"));
-            interceptors.add(new HeaderRequestInterceptor("Accept", "application/json; charset=UTF-8"));
-            interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
-            
-            return restTemplate;
-    }
+    
 }
