@@ -81,7 +81,6 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         for (String cypherQuery : cypherQueries) {
             request.getStatements().add(new CypherStatement(cypherQuery));
         }
-        ;
 
         WebTarget resourceTarget = client.target(transaction.getLocationUri());
 
