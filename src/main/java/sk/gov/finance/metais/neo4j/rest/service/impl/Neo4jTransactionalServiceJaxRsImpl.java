@@ -63,7 +63,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
             }
         }
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
+                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
@@ -101,7 +101,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
             }
         }
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
+                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
@@ -128,7 +128,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         WebTarget resourceTarget = client.target(dbTransactionUrl);
 
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
+                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);
@@ -167,7 +167,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         }
 
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", "application/json; charset=UTF-8").buildPost(Entity.json(request)).invoke();
+                .header("Content-Type", MediaType.APPLICATION_JSON).buildPost(Entity.json(request)).invoke();
 
         CypherResponse body = response.readEntity(CypherResponse.class);
 
@@ -189,7 +189,7 @@ public class Neo4jTransactionalServiceJaxRsImpl implements Neo4jTransactionalSer
         WebTarget resourceTarget = client.target(transaction.getLocationUri());
 
         Response response = resourceTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Basic " + userPasswordEncoded)
-                .header("Content-Type", "application/json; charset=UTF-8").buildDelete().invoke();
+                .header("Content-Type", MediaType.APPLICATION_JSON).buildDelete().invoke();
 
         if (log.isDebugEnabled()) {
             log.debug("Response:" + response);

@@ -1,17 +1,22 @@
 package sk.gov.finance.metais.neo4j.rest.service.impl;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,25 +27,39 @@ import sk.gov.finance.metais.neo4j.rest.bo.CypherResponse;
 import sk.gov.finance.metais.neo4j.rest.bo.CypherStatement;
 import sk.gov.finance.metais.neo4j.rest.bo.Transaction;
 import sk.gov.finance.metais.neo4j.rest.exceptions.Neo4jErrorException;
+import sk.gov.finance.metais.neo4j.rest.interceptors.HeaderRequestInterceptor;
 import sk.gov.finance.metais.neo4j.rest.service.Neo4jTransactionalService;
 
 public class Neo4jTransactionalServiceRestTemplateImpl implements Neo4jTransactionalService {
 
     private static final Logger log = LoggerFactory.getLogger(Neo4jTransactionalServiceRestTemplateImpl.class);
 
-    @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
     
     private String dbUrl;
     private String dbTransactionUrl;
     private String userPasswordEncoded;
 
     public Neo4jTransactionalServiceRestTemplateImpl(String dbUrl, String username, String password) {
-    
+
         this.dbUrl = dbUrl;
         this.dbTransactionUrl = dbUrl + "/transaction";
         this.userPasswordEncoded = new String(Base64.encodeBase64((username + ":" + password).getBytes()));
-        
+
+        restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+        restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
+
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+
+        if (interceptors == null) {
+            interceptors = new ArrayList<ClientHttpRequestInterceptor>();
+        }
+
+        interceptors.add(new HeaderRequestInterceptor("Authorization", "Basic " + userPasswordEncoded));
+        interceptors.add(new HeaderRequestInterceptor("Accept", MediaType.APPLICATION_JSON));
+        interceptors.add(new HeaderRequestInterceptor("Content-Type", MediaType.APPLICATION_JSON));
+
         log.debug(userPasswordEncoded);
     }
     
