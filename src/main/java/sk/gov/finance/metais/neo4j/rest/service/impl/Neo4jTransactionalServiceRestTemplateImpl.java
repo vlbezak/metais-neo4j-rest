@@ -44,23 +44,35 @@ public class Neo4jTransactionalServiceRestTemplateImpl implements Neo4jTransacti
         log.debug(userPasswordEncoded);
     }
     
-    public CypherResponse runQuery(Transaction transaction, String cypherQuery) throws JsonProcessingException {
+    public CypherResponse runQuery(Transaction transaction, String cypherQuery) {
         CypherRequest request = new CypherRequest();
 
         request.getStatements().add(new CypherStatement(cypherQuery));
 
-        log.debug("Request to neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         ResponseEntity<CypherResponse> response = restTemplate.postForEntity(transaction.getLocationUri(), request, CypherResponse.class);
 
-        log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         checkResponse(response);
 
         return response.getBody();
     }
 
-    public CypherResponse runQuery(Transaction transaction, List<String> cypherQueries) throws JsonProcessingException {
+    public CypherResponse runQuery(Transaction transaction, List<String> cypherQueries) {
         CypherRequest request = new CypherRequest();
 
         for(String cypherQuery: cypherQueries)
@@ -68,41 +80,79 @@ public class Neo4jTransactionalServiceRestTemplateImpl implements Neo4jTransacti
                 request.getStatements().add(new CypherStatement(cypherQuery));
         }
         
-        log.debug("Request to neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         ResponseEntity<CypherResponse> response = restTemplate.postForEntity(transaction.getLocationUri(), request , CypherResponse.class);
         
-        log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Response from neo4j from runQuery:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         checkResponse(response);
         
         return response.getBody();
     }
 
-    public Transaction startTransaction() throws JsonProcessingException {
+    public Transaction startTransaction() {
         CypherRequest request = new CypherRequest();
         
-        log.debug("Request to neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         URI locationUri = restTemplate.postForLocation(dbTransactionUrl, request, new HashMap<String, String>());
         
-        log.debug("Response from neo4j from startTransaction: locationUri='" + locationUri + "'");
+        if (log.isDebugEnabled()) {
+            log.debug("Response from neo4j from startTransaction: locationUri='" + locationUri + "'");
+        }
         
         ResponseEntity<CypherResponse> response = restTemplate.postForEntity(locationUri, request , CypherResponse.class);
         
-        log.debug("Response from neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Response from neo4j from startTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         return new Transaction(locationUri, response.getBody().getCommit());
     }
     
-    public void commitTransaction(Transaction transaction)  throws JsonProcessingException{
+    public void commitTransaction(Transaction transaction){
         CypherRequest request = new CypherRequest();
         
-        log.debug("Request to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(request));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         ResponseEntity<CypherResponse> response = restTemplate.postForEntity(transaction.getCommitUrl(), request , CypherResponse.class);
         
-        log.debug("Request to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("Request to neo4j from commitTransaction:\n" + new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(response.getBody()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         
         checkResponse(response);
 
